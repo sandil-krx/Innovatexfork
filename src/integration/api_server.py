@@ -378,6 +378,30 @@ def seed_demo_data(samples: int = 5) -> None:
                 else:
                     event_correlator.register_event(dataset, event)
 
+    inventory_snapshots_path = data_root / "inventory_snapshots.jsonl"
+    if inventory_snapshots_path.exists():
+        with inventory_snapshots_path.open("r", encoding="utf-8") as handle:
+            lines = handle.readlines()
+            if len(lines) >= 2:
+                baseline_snapshot = json.loads(lines[0])
+                actual_snapshot = json.loads(lines[-1])
+
+                sales_events = []
+                pos_transactions_path = data_root / "pos_transactions.jsonl"
+                if pos_transactions_path.exists():
+                    with pos_transactions_path.open("r", encoding="utf-8") as f:
+                        for line in f:
+                            event = json.loads(line)
+                            if baseline_snapshot["timestamp"] <= event["timestamp"] <= actual_snapshot["timestamp"]:
+                                sales_events.append(event)
+
+                report = inventory_analyzer.analyze(
+                    baseline_inventory=baseline_snapshot["data"],
+                    actual_inventory=actual_snapshot["data"],
+                    sales_events=sales_events,
+                )
+                STATE["inventory_reports"].append(report)
+
 
 def run_api_server(host: str, port: int, seed: bool = False) -> None:
     if seed:

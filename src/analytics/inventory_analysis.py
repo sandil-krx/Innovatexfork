@@ -58,7 +58,6 @@ class InventoryAnalyzer:
             },
         }
 
-    # @algorithm ShrinkageDetection | Calculate inventory shrinkage( these arent implemented yet)
     def calculate_inventory_shrinkage(
         self,
         baseline_inventory: Dict[str, int],
